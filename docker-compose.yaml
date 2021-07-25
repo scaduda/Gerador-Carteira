@@ -1,0 +1,17 @@
+version: "3"
+services:
+  carteira-bombeiro-hml:
+    working_dir: /app
+    image: webdevops/php-apache-dev:8.0
+    container_name: carteira-bombeiro-servico
+    build:
+      context: .
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ".:/app"
+    restart: always
+    environment:
+      ANBIENT: 2
+      PHP_DATE_TIMEZONE: America/Maceio
