@@ -4,8 +4,8 @@
     <title>Hi</title>
 </head>
 <body>
-<h1>{{ $title }}</h1>
-<p>{{ $date }}</p>
+<h1>{{ $data }}</h1>
+
 
 </body>
 </html>

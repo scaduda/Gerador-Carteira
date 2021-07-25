@@ -15,4 +15,5 @@ use App\Http\Controllers\CarteiraController;
 |
 */
 
-Route::get('gerar-carteira', [CarteiraController::class, 'gerarCarteira'])->name('generate-pdf');
+Route::get('gerar-carteira-frente', [CarteiraController::class, 'gerarCarteiraFrente']);
+Route::get('gerar-carteira-verso', [CarteiraController::class, 'gerarCarteiraVerso']);

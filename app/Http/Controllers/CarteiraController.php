@@ -17,10 +17,21 @@ class CarteiraController extends Controller
         $this->service = new CarteiraService();
     }
 
-    public function gerarCarteira()
+    public function gerarCarteiraFrente()
     {
         try{
             return $this->service->gerarCarteiraFrente();
+        } catch (NotFoundException $e) {
+            return response()->json(['mensagem' => $e->getMessage()], $e->getCode());
+        } catch (\Exception $e) {
+            return response()->json(['mensagem' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function gerarCarteiraVerso()
+    {
+        try{
+            return $this->service->gerarCarteiraVerso();
         } catch (NotFoundException $e) {
             return response()->json(['mensagem' => $e->getMessage()], $e->getCode());
         } catch (\Exception $e) {
