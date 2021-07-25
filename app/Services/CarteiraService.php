@@ -37,36 +37,37 @@ class CarteiraService implements ICarteiraService
         $ass = $img->insert($assinatura, 'bottom-center',50, 80);
 
         $nome = $img->text('ALEXANDRE JOSE ALVES SILVA', 45, 600, function ($font) {
-            $font->size(24);
+            $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
         $cargo = $img->text('CORONEL', 45, 700, function ($font) {
-            $font->size(24);
-            $font->file(public_path('fonts/CRYSRG__.TTF'));
+            $font->size(35);
+            $font->file(public_path('fonts/CrystalBold.ttf'));
             $font->color('#e21f27');
         });
 
-        $cpf = $img->text('000.000.000-00', 45, 780, function ($font) {
-            $font->size(24);
+        $cpf = $img->text('000.000.000-00', 45, 790, function ($font) {
+            $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
-        $matricula = $img->text('00.000-0', 45, 840, function ($font) {
-            $font->size(24);
+        $matricula = $img->text('00.000-0', 45, 855, function ($font) {
+            $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
-        $tipoSanguineo = $img->text('A+', 370, 840, function ($font) {
-            $font->size(24);
+        $tipoSanguineo = $img->text('A+', 370, 855, function ($font) {
+            $font->size(30);
+            $font->file(public_path('fonts/CrystalBold.ttf'));
             $font->color('#000000');
         });
 
-        $dataValidade = $img->text('14/08/2090', 370, 780, function ($font) {
-            $font->size(24);
+        $dataValidade = $img->text('14/08/2090', 370, 790, function ($font) {
+            $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
