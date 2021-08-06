@@ -4,15 +4,14 @@
 namespace App\Services;
 
 
-use App\Http\Requests\StoreRgbmRequest;
+
 use App\Models\Rgbm;
 use App\Services\Interfaces\IRgbmService;
 use Carbon\Carbon;
-use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use Exception;
-use Symfony\Component\Console\Input\Input;
+
 
 
 class RgbmService implements IRgbmService
@@ -55,10 +54,10 @@ class RgbmService implements IRgbmService
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-frente.jpg'))
             ->resize(638, 1011);
 
-        $fotoPerfil = Image::make($rgbm->foto)->resize(240,298)->response('jpeg', 90);
-        $img->insert($fotoPerfil, 'bottom-left', 47,500)->response('png');
+        $fotoPerfil = Image::make($rgbm->foto)->resize(240,298)->stream('jpeg', 90);
+        $img->insert($fotoPerfil, 'bottom-left', 47,500);
 
-        $assinatura = Image::make($rgbm->assinatura)->resize(200,91);
+        $assinatura = Image::make($rgbm->assinatura)->resize(200,91)->stream('png');
         $img->insert($assinatura, 'bottom-center',50, 80);
 
         $img->text($rgbm->nom_completo, 45, 600, function ($font) {
@@ -104,8 +103,11 @@ class RgbmService implements IRgbmService
     public function gerarRgbmVerso(string $num_matricula)
     {
         $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
-        $rgbm->foto = base64_decode($rgbm->foto);
-        $rgbm->assinatura = base64_decode($rgbm->assinatura);
+        $rgbm->makeVisible('foto');
+        $rgbm->foto = stream_get_contents($rgbm->foto);
+        $rgbm->makeVisible('assinatura');
+        $rgbm->assinatura = stream_get_contents($rgbm->assinatura);
+
 
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-verso.jpg'))
             ->resize(638, 1011);
@@ -162,7 +164,6 @@ class RgbmService implements IRgbmService
 
         return $img->response("png");
     }
-
 
 }
 
