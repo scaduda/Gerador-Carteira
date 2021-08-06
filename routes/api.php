@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RgbmController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('v1')->group(function () {
+    Route::get('/gerar-rgbm-frente', [RgbmController::class, 'gerarRgbmFrente']);
+    Route::get('/gerar-rgbm-verso', [RgbmController::class, 'gerarRgbmVerso']);
+    Route::post('/rgbm', [RgbmController::class, 'store']);
+    Route::get('rgbm', [RgbmController::class, 'index']);
 });

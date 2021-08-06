@@ -4,29 +4,47 @@
 namespace App\Services;
 
 
-use App\Services\Interfaces\ICarteiraService;
-use Barryvdh\DomPDF\PDF;
+use App\Http\Requests\StoreRgbmRequest;
+use App\Models\Rgbm;
+use App\Services\Interfaces\IRgbmService;
 use Carbon\Carbon;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
+use Exception;
 
-class CarteiraService implements ICarteiraService
+
+class RgbmService implements IRgbmService
 {
-    private string $nome;
-    private string $cargo;
-    private string $cpf;
-    private string $matricula;
-    private Carbon $dataValidade;
-    private string $tipoSanguineo;
-    private int $numero;
-    private string $rg;
-    private Carbon $nascimento;
-    private string $siape;
-    private string $naturalidade;
-    private string $nacionalidade;
-    private Carbon $dataExpedicao;
 
-    public function gerarCarteiraFrente()
+    public function index()
     {
+        return Rgbm::query()->get();
+    }
+
+    public function store(array $request)
+    {
+        DB::beginTransaction();
+        try{
+            $rgbmObj = $request;
+            $rgbmObj['data_expedicao'] = Carbon::now();
+            Rgbm::create($rgbmObj);
+            DB::commit();
+        }catch (Exception $err){
+            DB::rollBack();
+            throw new Exception($err->getMessage(), $err->getCode());
+        }
+
+        $rgbmFrente = $this->gerarRgbmFrente($rgbmObj['num_matricula']);
+        $rgbmVerso = $this->gerarRgbmVerso($rgbmObj['num_matricula']);
+
+        return $rgbmFrente;
+    }
+
+    public function gerarRgbmFrente(string $num_matricula)
+    {
+        $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-frente.jpg'))
             ->resize(638, 1011);
 
@@ -34,39 +52,39 @@ class CarteiraService implements ICarteiraService
         $foto = $img->insert($fotoPerfil, 'bottom-left', 47,500);
 
         $assinatura = Image::make(public_path('images/images/assinatura.png'))->resize(200,91);
-        $ass = $img->insert($assinatura, 'bottom-center',50, 80);
+        $img->insert($assinatura, 'bottom-center',50, 80);
 
-        $nome = $img->text('ALEXANDRE JOSE ALVES SILVA', 45, 600, function ($font) {
+        $img->text($rgbm->nom_completo, 45, 600, function ($font) {
             $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
-        $cargo = $img->text('CORONEL', 45, 700, function ($font) {
+        $img->text($rgbm->cargo_nome, 45, 700, function ($font) {
             $font->size(35);
             $font->file(public_path('fonts/CrystalBold.ttf'));
             $font->color('#e21f27');
         });
 
-        $cpf = $img->text('000.000.000-00', 45, 790, function ($font) {
+        $img->text($rgbm->num_cpf, 45, 790, function ($font) {
             $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
-        $matricula = $img->text('00.000-0', 45, 855, function ($font) {
+        $img->text($rgbm->num_matricula, 45, 855, function ($font) {
             $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
         });
 
-        $tipoSanguineo = $img->text('A+', 370, 855, function ($font) {
+        $img->text($rgbm->tip_sangue, 370, 855, function ($font) {
             $font->size(30);
             $font->file(public_path('fonts/CrystalBold.ttf'));
             $font->color('#000000');
         });
 
-        $dataValidade = $img->text('14/08/2090', 370, 790, function ($font) {
+        $img->text(Carbon::createFromDate($rgbm->dat_validade_rgbm)->format('d/m/Y'), 370, 790, function ($font) {
             $font->size(30);
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->color('#000000');
@@ -76,48 +94,50 @@ class CarteiraService implements ICarteiraService
 
     }
 
-    public function gerarCarteiraVerso()
+    public function gerarRgbmVerso(string $num_matricula)
     {
+        $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-verso.jpg'))
             ->resize(638, 1011);
 
-        $numero = $img->text('000000', 20, 200, function ($font) {
+        $numero = $img->text($rgbm->num_rgbm, 20, 200, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $rg = $img->text('000000-0', 195, 200, function ($font) {
+        $rg = $img->text($rgbm->rg, 195, 200, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $nascimento = $img->text('00/00/0000', 20, 258, function ($font) {
+        $img->text(Carbon::createFromDate($rgbm->dat_nasc)->format('d/m/Y'), 20, 258, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $siape = $img->text('00.000.000-00', 215, 258, function ($font) {
+        $img->text($rgbm->siape, 215, 258, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $naturalidade = $img->text('ARACAJU/SE', 20, 315, function ($font) {
+        $img->text($rgbm->naturalidade, 20, 315, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $nacionalidade = $img->text('BRASILEIRO', 20, 370, function ($font) {
+        $img->text($rgbm->nacionalidade, 20, 370, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $dataExpedicao = $img->text('00/00/0000', 215, 370, function ($font) {
+        $img->text(Carbon::createFromDate($rgbm->data_expedicao)->format('d/m/Y'), 215, 370, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');

@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\RgbmController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\CarteiraController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,5 +16,3 @@ use App\Http\Controllers\CarteiraController;
 |
 */
 
-Route::get('gerar-carteira-frente', [CarteiraController::class, 'gerarCarteiraFrente']);
-Route::get('gerar-carteira-verso', [CarteiraController::class, 'gerarCarteiraVerso']);
