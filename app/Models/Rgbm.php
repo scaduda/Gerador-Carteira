@@ -26,7 +26,9 @@ class Rgbm extends Model
         'nacionalidade',
         'dat_nasc',
         'dat_validade_rgbm',
-        'data_expedicao'
+        'data_expedicao',
+        'foto',
+        'assinatura'
     ];
     protected $visible = [
         'id',
@@ -42,6 +44,8 @@ class Rgbm extends Model
         'nacionalidade',
         'dat_nasc',
         'dat_validade_rgbm',
-        'data_expedicao'
+        'data_expedicao',
+        'foto',
+        'assinatura'
     ];
 }

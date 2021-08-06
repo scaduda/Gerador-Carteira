@@ -42,10 +42,10 @@ class RgbmController extends Controller
         }
     }
 
-    public function gerarRgbmFrente()
+    public function gerarRgbmFrente(string $num_matricula)
     {
         try {
-            return $this->service->gerarRgbmFrente();
+            return $this->service->gerarRgbmFrente($num_matricula);
         } catch (NotFoundException $e) {
             return response()->json(['mensagem' => $e->getMessage()], $e->getCode());
         } catch (\Exception $e) {
@@ -53,10 +53,10 @@ class RgbmController extends Controller
         }
     }
 
-    public function gerarRgbmVerso()
+    public function gerarRgbmVerso(string $num_matricula)
     {
         try {
-            return $this->service->gerarRgbmVerso();
+            return $this->service->gerarRgbmVerso($num_matricula);
         } catch (NotFoundException $e) {
             return response()->json(['mensagem' => $e->getMessage()], $e->getCode());
         } catch (\Exception $e) {

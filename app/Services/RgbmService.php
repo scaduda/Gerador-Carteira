@@ -12,6 +12,7 @@ use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use Exception;
+use Symfony\Component\Console\Input\Input;
 
 
 class RgbmService implements IRgbmService
@@ -28,6 +29,8 @@ class RgbmService implements IRgbmService
         try{
             $rgbmObj = $request;
             $rgbmObj['data_expedicao'] = Carbon::now();
+            $rgbmObj['foto'] = base64_encode(file_get_contents($request['foto']->getPathName()));
+            $rgbmObj['assinatura'] = base64_encode(file_get_contents($request['assinatura']->getPathName()));
             Rgbm::create($rgbmObj);
             DB::commit();
         }catch (Exception $err){
@@ -44,14 +47,18 @@ class RgbmService implements IRgbmService
     public function gerarRgbmFrente(string $num_matricula)
     {
         $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+        $rgbm->makeVisible('foto');
+        $rgbm->foto = stream_get_contents($rgbm->foto);
+        $rgbm->makeVisible('assinatura');
+        $rgbm->assinatura = stream_get_contents($rgbm->assinatura);
 
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-frente.jpg'))
             ->resize(638, 1011);
 
-        $fotoPerfil = Image::make(public_path('images/images/fotografia cel alexandre.jpg'))->resize(240,298);
-        $foto = $img->insert($fotoPerfil, 'bottom-left', 47,500);
+        $fotoPerfil = Image::make($rgbm->foto)->resize(240,298)->response('jpeg', 90);
+        $img->insert($fotoPerfil, 'bottom-left', 47,500)->response('png');
 
-        $assinatura = Image::make(public_path('images/images/assinatura.png'))->resize(200,91);
+        $assinatura = Image::make($rgbm->assinatura)->resize(200,91);
         $img->insert($assinatura, 'bottom-center',50, 80);
 
         $img->text($rgbm->nom_completo, 45, 600, function ($font) {
@@ -97,17 +104,19 @@ class RgbmService implements IRgbmService
     public function gerarRgbmVerso(string $num_matricula)
     {
         $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+        $rgbm->foto = base64_decode($rgbm->foto);
+        $rgbm->assinatura = base64_decode($rgbm->assinatura);
 
         $img = Image::make(public_path('images/templates/carteira-digital-bombeiros-verso.jpg'))
             ->resize(638, 1011);
 
-        $numero = $img->text($rgbm->num_rgbm, 20, 200, function ($font) {
+        $img->text($rgbm->num_rgbm, 20, 200, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
         });
 
-        $rg = $img->text($rgbm->rg, 195, 200, function ($font) {
+        $img->text($rgbm->rg, 195, 200, function ($font) {
             $font->file(public_path('fonts/CRYSRG__.TTF'));
             $font->size(24);
             $font->color('#000000');
@@ -142,11 +151,11 @@ class RgbmService implements IRgbmService
             $font->size(24);
             $font->color('#000000');
         });
-        $miniaturaPerfil = Image::make(public_path('images/images/fotografia cel alexandre.jpg'))->resize(100,124);
-        $miniatura = $img->insert($miniaturaPerfil, 'bottom-left', 265,150);
+        $miniaturaPerfil = Image::make($rgbm->foto)->resize(100,124)->stream('jpg', 90);
+        $img->insert($miniaturaPerfil, 'bottom-left', 265,150);
 
-        $assinatura = Image::make(public_path('images/images/assinatura.png'))->resize(200,91);
-        $ass = $img->insert($assinatura, 'bottom-left',120, 60);
+        $assinatura = Image::make($rgbm->assinatura)->resize(200,91)->stream('png');
+        $img->insert($assinatura, 'bottom-left',120, 60);
 
         $qrCode = Image::make(public_path('images/images/qrcode.png'))->resize(300,382);
         $qr = $img->insert($qrCode, 'bottom-left',38, 215);

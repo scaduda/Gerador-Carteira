@@ -39,6 +39,8 @@ class StoreRgbmRequest extends FormRequest
             'siape' => 'required|string',
             'naturalidade' => 'required|string',
             'nacionalidade' =>'required|string',
+            'foto' => 'required',
+            'assinatura' => 'required'
         ];
     }
 

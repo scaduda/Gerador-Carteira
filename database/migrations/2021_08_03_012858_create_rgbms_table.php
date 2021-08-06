@@ -26,6 +26,8 @@ class CreateRgbmsTable extends Migration
             $table->string('siape', 30);
             $table->string('naturalidade', 30);
             $table->string('nacionalidade', 30);
+            $table->binary('foto');
+            $table->binary('assinatura');
             $table->dateTime('dat_nasc');
             $table->dateTime('dat_validade_rgbm');
             $table->dateTime('data_expedicao');
