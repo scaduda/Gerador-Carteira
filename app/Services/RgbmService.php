@@ -6,6 +6,7 @@ namespace App\Services;
 
 
 use App\Models\Rgbm;
+use App\Models\RgbmArquivo;
 use App\Services\Interfaces\IRgbmService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,22 +31,44 @@ class RgbmService implements IRgbmService
             $rgbmObj['data_expedicao'] = Carbon::now();
             $rgbmObj['foto'] = base64_encode(file_get_contents($request['foto']->getPathName()));
             $rgbmObj['assinatura'] = base64_encode(file_get_contents($request['assinatura']->getPathName()));
-            Rgbm::create($rgbmObj);
+            $rgbmSalva = Rgbm::where([
+                ['num_cpf', '=', $rgbmObj['num_cpf']],
+                ['num_matricula', '=', $rgbmObj['num_matricula']],
+                ['tip_sangue', '=', $rgbmObj['tip_sangue']],
+                ['num_rgbm', '=', $rgbmObj['num_rgbm']],
+                ['rg', '=', $rgbmObj['rg']],
+                ['dat_nasc', '=', $rgbmObj['dat_nasc']],
+                ['siape', '=', $rgbmObj['siape']],
+                ['naturalidade', '=', $rgbmObj['naturalidade']],
+                ['nacionalidade', '=', $rgbmObj['nacionalidade']]
+            ])->get()->first();
+
+            $rgbmFinal = [];
+            if (!$rgbmSalva) {
+               $rgbmFinal = Rgbm::query()->create($rgbmObj)->toArray();
+            } else {
+
+                $rgbmId = $rgbmSalva->id;
+                unset($rgbmSalva->id);
+
+                if (!empty(array_diff($rgbmSalva->toArray(), $rgbmObj))) {
+                    RGBM::where('id', '=', $rgbmId)->update($rgbmObj);
+                    $rgbmFinal = $rgbmSalva->fresh();
+                }
+            }
             DB::commit();
-        }catch (Exception $err){
+            $frente = base64_encode($this->gerarRgbmFrente($rgbmFinal['num_rgbm']));
+            $verso = base64_encode($this->gerarRgbmVerso($rgbmFinal['num_rgbm']));
+            return ['frente' => $frente, 'verso' => $verso];
+        } catch (Exception $err) {
             DB::rollBack();
             throw new Exception($err->getMessage(), $err->getCode());
         }
-
-        $rgbmFrente = $this->gerarRgbmFrente($rgbmObj['num_matricula']);
-        $rgbmVerso = $this->gerarRgbmVerso($rgbmObj['num_matricula']);
-
-        return $rgbmFrente;
     }
 
-    public function gerarRgbmFrente(string $num_matricula)
+    public function gerarRgbmFrente(string $num_rgbm)
     {
-        $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+        $rgbm = Rgbm::where('num_rgbm', '=', $num_rgbm)->get()->first();
         $rgbm->makeVisible('foto');
         $rgbm->foto = stream_get_contents($rgbm->foto);
         $rgbm->makeVisible('assinatura');
@@ -100,9 +123,9 @@ class RgbmService implements IRgbmService
 
     }
 
-    public function gerarRgbmVerso(string $num_matricula)
+    public function gerarRgbmVerso(string $num_rgbm)
     {
-        $rgbm = Rgbm::where('num_matricula', '=', $num_matricula)->get()->first();
+        $rgbm = Rgbm::where('num_rgbm', '=', $num_rgbm)->get()->first();
         $rgbm->makeVisible('foto');
         $rgbm->foto = stream_get_contents($rgbm->foto);
         $rgbm->makeVisible('assinatura');
